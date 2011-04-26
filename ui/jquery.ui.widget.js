@@ -116,9 +116,7 @@ $.widget.bridge = function( name, object ) {
 				}
 				var methodValue = instance[ options ].apply( instance, args );
 				if ( methodValue !== instance && methodValue !== undefined ) {
-					returnValue = methodValue.jquery ?
-						returnValue.pushStack( methodValue.get() ) :
-						methodValue;
+					returnValue = methodValue;
 					return false;
 				}
 			});
@@ -155,10 +153,7 @@ $.Widget.prototype = {
 	widgetEventPrefix: "",
 	defaultElement: "<div>",
 	options: {
-		disabled: false,
-
-		// callbacks
-		create: null
+		disabled: false
 	},
 	_createWidget: function( options, element ) {
 		element = $( element || this.defaultElement || this )[ 0 ];
@@ -181,7 +176,9 @@ $.Widget.prototype = {
 		this._trigger( "create" );
 		this._init();
 	},
-	_getCreateOptions: $.noop,
+	_getCreateOptions: function() {
+		return $.metadata && $.metadata.get( this.element[0] )[ this.widgetName ];
+	},
 	_create: $.noop,
 	_init: $.noop,
 
@@ -211,34 +208,19 @@ $.Widget.prototype = {
 	},
 
 	option: function( key, value ) {
-		var options = key,
-			parts,
-			curOption,
-			i;
+		var options = key;
 
 		if ( arguments.length === 0 ) {
 			// don't return a reference to the internal hash
 			return $.extend( {}, this.options );
 		}
 
-		if ( typeof key === "string" ) {
+		if  (typeof key === "string" ) {
 			if ( value === undefined ) {
 				return this.options[ key ];
 			}
-			// handle nested keys, e.g., "foo.bar" => { foo: { bar: ___ } }
 			options = {};
-			parts = key.split( "." );
-			key = parts.shift();
-			if ( parts.length ) {
-				curOption = options[ key ] = $.extend( true, {}, this.options[ key ] );
-				for ( i = 0; i < parts.length - 1; i++ ) {
-					curOption[ parts[ i ] ] = curOption[ parts[ i ] ] || {};
-					curOption = curOption[ parts[ i ] ];
-				}
-				curOption[ parts.pop() ] = value;
-			} else {
-				options[ key ] = value;
-			}
+			options[ key ] = value;
 		}
 
 		this._setOptions( options );
@@ -280,8 +262,6 @@ $.Widget.prototype = {
 			handlers = element;
 			element = this.element;
 		} else {
-			// accept selectors, DOM elements
-			element = $( element );
 			this.bindings = this.bindings.add( element );
 		}
 		var instance = this;
@@ -362,12 +342,10 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 		var hasOptions = !$.isEmptyObject( options ),
 			effectName = options.effect || defaultEffect;
 		options.complete = callback;
-		if (options.delay) {
-			element.delay( options.delay );
-		}
+
 		if ( hasOptions && $.effects && $.effects[ effectName ] ) {
 			element[ method ]( options );
-		} else if ( element[ effectName ] ) {
+		} else if ( hasOptions && element[ effectName ] ) {
 			element[ effectName ]( options.duration, options.easing, callback );
 		} else {
 			element[ method ]();
@@ -377,12 +355,5 @@ $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
 		}
 	};
 });
-
-// DEPRECATED
-if ( $.uiBackCompat !== false ) {
-	$.Widget.prototype._getCreateOptions = function() {
-		return $.metadata && $.metadata.get( this.element[0] )[ this.widgetName ];
-	}
-}
 
 })( jQuery );

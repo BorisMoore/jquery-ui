@@ -90,8 +90,8 @@ $.widget("ui.tooltip", {
 			of: target
 		}, this.options.position ) ).hide();
 
-
-		tooltip.fadeIn();
+		tooltip.stop( true );
+		this._show( tooltip, this.options.show );
 
 		this._trigger( "open", event );
 
@@ -111,7 +111,8 @@ $.widget("ui.tooltip", {
 		var tooltip = this._find( target );
 		target.removeAttr( "aria-describedby" );
 		
-		tooltip.fadeOut( function() {
+		tooltip.stop( true );
+		this._hide( tooltip, this.options.hide, function() {
 			$( this ).remove();
 		});
 		

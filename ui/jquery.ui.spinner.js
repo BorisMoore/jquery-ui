@@ -15,6 +15,7 @@
 
 $.widget('ui.spinner', {
 	defaultElement: "<input>",
+  widgetEventPrefix: "spin",
 	options: {
 		incremental: true,
 		max: null,
@@ -181,7 +182,7 @@ $.widget('ui.spinner', {
 		}
 		var self = this;
 		this.element.bind("mousewheel.spinner", function(event, delta) {
-			if (self.options.disabled) {
+			if (self.options.disabled || !delta) {
 				return;
 			}
 			if (!self.spinning && !self._start(event)) {
@@ -257,7 +258,7 @@ $.widget('ui.spinner', {
 		if (this.timer) {
 			window.clearTimeout(this.timer);
 		}
-		this.element[0].focus();
+		this.element.focus();
 		this.spinning = false;
 		this._trigger('stop', event);
 	},
@@ -312,7 +313,6 @@ $.widget('ui.spinner', {
 	},
 	
 	_format: function(num) {
-		var num = this.options.value;
 		this.element.val( $.global && this.options.numberformat ? $.global.format(num, this.options.numberformat) : num );
 	},
 		

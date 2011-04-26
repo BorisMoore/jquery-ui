@@ -30,7 +30,16 @@ $.widget( "ui.autocomplete", {
 			at: "left bottom",
 			collision: "none"
 		},
-		source: null
+		source: null,
+
+		// callbacks
+		change: null,
+		close: null,
+		focus: null,
+		open: null,
+		response: null,
+		search: null,
+		select: null
 	},
 
 	pending: 0,
@@ -39,6 +48,8 @@ $.widget( "ui.autocomplete", {
 		var self = this,
 			doc = this.element[ 0 ].ownerDocument,
 			suppressKeyPress;
+
+		this.valueMethod = this.element[ this.element.is( "input" ) ? "val" : "text" ];
 
 		this.element
 			.addClass( "ui-autocomplete-input" )
@@ -90,7 +101,7 @@ $.widget( "ui.autocomplete", {
 					self.menu.select( event );
 					break;
 				case keyCode.ESCAPE:
-					self.element.val( self.term );
+					self._value( self.term );
 					self.close( event );
 					break;
 				default:
@@ -98,7 +109,7 @@ $.widget( "ui.autocomplete", {
 					clearTimeout( self.searching );
 					self.searching = setTimeout(function() {
 						// only search if the value has changed
-						if ( self.term != self.element.val() ) {
+						if ( self.term != self._value() ) {
 							self.selectedItem = null;
 							self.search( null, event );
 						}
@@ -118,7 +129,7 @@ $.widget( "ui.autocomplete", {
 				}
 
 				self.selectedItem = null;
-				self.previous = self.element.val();
+				self.previous = self._value();
 			})
 			.bind( "blur.autocomplete", function( event ) {
 				if ( self.options.disabled ) {
@@ -171,7 +182,7 @@ $.widget( "ui.autocomplete", {
 					if ( false !== self._trigger( "focus", event, { item: item } ) ) {
 						// use value to match what will end up in the input, if it was a key event
 						if ( /^key/.test(event.originalEvent.type) ) {
-							self.element.val( item.value );
+							self._value( item.value );
 						}
 					}
 				},
@@ -193,11 +204,11 @@ $.widget( "ui.autocomplete", {
 					}
 
 					if ( false !== self._trigger( "select", event, { item: item } ) ) {
-						self.element.val( item.value );
+						self._value( item.value );
 					}
 					// reset the term after the select event
 					// this allows custom select handling to work properly
-					self.term = self.element.val();
+					self.term = self._value();
 
 					self.close( event );
 					self.selectedItem = item;
@@ -206,8 +217,8 @@ $.widget( "ui.autocomplete", {
 					// don't set the value of the text field if it's already correct
 					// this prevents moving the cursor unnecessarily
 					if ( self.menu.element.is(":visible") &&
-						( self.element.val() !== self.term ) ) {
-						self.element.val( self.term );
+						( self._value() !== self.term ) ) {
+						self._value( self.term );
 					}
 				}
 			})
@@ -280,10 +291,10 @@ $.widget( "ui.autocomplete", {
 	},
 
 	search: function( value, event ) {
-		value = value != null ? value : this.element.val();
+		value = value != null ? value : this._value();
 
 		// always save the actual value, not the one passed as an argument
-		this.term = this.element.val();
+		this.term = this._value();
 
 		if ( value.length < this.options.minLength ) {
 			return this.close( event );
@@ -305,8 +316,11 @@ $.widget( "ui.autocomplete", {
 	},
 
 	_response: function( content ) {
-		if ( !this.options.disabled && content && content.length ) {
+		if ( content ) {
 			content = this._normalize( content );
+		}
+		this._trigger( "response", null, { content: content } );
+		if ( !this.options.disabled && content && content.length ) {
 			this._suggest( content );
 			this._trigger( "open" );
 		} else {
@@ -322,13 +336,13 @@ $.widget( "ui.autocomplete", {
 		clearTimeout( this.closing );
 		if ( this.menu.element.is(":visible") ) {
 			this.menu.element.hide();
-			this.menu.deactivate();
+			this.menu.blur();
 			this._trigger( "close", event );
 		}
 	},
 	
 	_change: function( event ) {
-		if ( this.previous !== this.element.val() ) {
+		if ( this.previous !== this._value() ) {
 			this._trigger( "change", event, { item: this.selectedItem } );
 		}
 	},
@@ -357,8 +371,8 @@ $.widget( "ui.autocomplete", {
 			.empty()
 			.zIndex( this.element.zIndex() + 1 );
 		this._renderMenu( ul, items );
-		// TODO refresh should check if the active item is still in the dom, removing the need for a manual deactivate
-		this.menu.deactivate();
+		// TODO refresh should check if the active item is still in the dom, removing the need for a manual blur
+		this.menu.blur();
 		this.menu.refresh();
 
 		// size and position menu
@@ -402,8 +416,8 @@ $.widget( "ui.autocomplete", {
 		}
 		if ( this.menu.first() && /^previous/.test(direction) ||
 				this.menu.last() && /^next/.test(direction) ) {
-			this.element.val( this.term );
-			this.menu.deactivate();
+			this._value( this.term );
+			this.menu.blur();
 			return;
 		}
 		this.menu[ direction ]( event );
@@ -411,6 +425,10 @@ $.widget( "ui.autocomplete", {
 
 	widget: function() {
 		return this.menu.element;
+	},
+
+	_value: function( value ) {
+		return this.valueMethod.apply( this.element, arguments );
 	}
 });
 

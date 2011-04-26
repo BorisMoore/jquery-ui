@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Grid: Data</title>
+	<link rel="stylesheet" href="../themes/base/jquery.ui.all.css">
+	<link rel="stylesheet" href="grid.css">
+	<script src="../jquery-1.5.1.js"></script>
+	<script src="../external/jquery.tmpl.js"></script>
+	<script src="../ui/jquery.ui.core.js"></script>
+	<script src="../ui/jquery.ui.widget.js"></script>
+	<script src="../ui/jquery.ui.button.js"></script>
+	<script src="datasource.js"></script>
+	<script src="grid.js"></script>
+	<script src="pager.js"></script>
+
+	<script>
+
+	var localDevelopers;
+	$.ajax({
+		dataType: "json",
+		url: "developers.json",
+		async: false,
+		success: function(result) {
+			localDevelopers = result;
+		}
+	});
+	
+	$.fn.filterControl = function(datasource) {
+		// TODO this shouldn't have to keep track of active filters
+		// TODO datasource API should be flexible enough to set and remove filters individualy
+		var filtered = {};
+		this.addClass("tool").find("button").click(function() {
+			var field = $(this).data("filter-field"),
+				value = $(this).data("filter-value"),
+				operator = $(this).data("filter-operator");
+			if (filtered[field]) {
+				delete filtered[field];
+			} else {
+				filtered[field] = {
+					property: field,
+					value: value,
+					operator: operator
+				};
+			}
+			var filter = [];
+			for (var key in filtered) {
+				filter.push(filtered[key]);
+			}
+			datasource.option("filter", filter).refresh();
+			
+			$(this).toggleClass("active");
+		})
+		return this;
+	}
+
+	$.fn.sorterControl = function(datasource) {
+		// TODO see above
+		var sorted = {};
+		this.addClass("tool").find("button").click(function() {
+			var field = $(this).data("sort-field");
+			if (sorted[field]) {
+				if (sorted[field].direction == "asc") {
+					sorted[field].direction = "desc";
+					$(this).removeClass("sort-asc").addClass("sort-desc");
+				} else {
+					delete sorted[field];
+					$(this).removeClass("active sort-desc");
+				}
+			} else {
+				sorted[field] = {
+					property: field,
+					direction: "asc"
+				};
+				$(this).addClass("active sort-asc")
+			}
+			var sort = [];
+			for (var key in sorted) {
+				sort.push(sorted[key]);
+			}
+			datasource.option("sort", sort).refresh();
+		})
+		return this;
+	}
+	
+	$(function() {
+		var developers = $.dataSource({
+			source: localDevelopers,
+			paging: {
+				take: 3,
+				skip: 0
+			}
+		});
+		
+		var dev2 = $.ui.datasource({
+			source: localDevelopers
+		})
+		//console.log(dev2.toArray());
+
+		$( "#developers-local" ).grid({
+			columns: [ "firstName", "lastName", "country" ],
+			source: developers
+		});
+		
+		$("#filterDevelopers").filterControl(developers);
+		$("#sortDevelopers").sorterControl(developers);
+		$("#pageDevelopers").pager({
+			source: developers
+		});
+		
+		developers.refresh();
+		
+		// A similar example...but with server integration and remote queries.
+		var movies = $.dataSource($.extend({}, $.dataSource.oDataSettings, {
+			path: "http://odata.netflix.com/Catalog/Titles",
+			paging: { take: 10 },
+			jsonp: "$callback"
+		}));
+		$( "#movies" ).grid({
+			source: movies
+		});
+
+		$("#filterMovies").filterControl(movies);
+		$("#sortMovies").sorterControl(movies);
+		$("#pageMovies").pager({
+			source: movies
+		});
+		
+		movies.refresh();
+	});
+	</script>
+	
+	<style>
+		.tool button {
+			border: 1px solid white;
+		}
+		.tool button.active {
+			border: 1px solid black;
+		}
+		.sort-asc:before {
+			content: "/\\"
+		}
+		.sort-desc:before {
+			content: "\\/"
+		}
+	</style>
+</head>
+<body>
+
+
+<h2>local data source</h2>
+<p id="filterDevelopers">
+	Filter:
+	<button data-filter-field="firstName" data-filter-value="Scott" type="button">Toggle firstName=Scott</button>
+	<button data-filter-field="lastName" data-filter-value="Worth"  type="button">Toggle lastName=Worth</button>
+	<button data-filter-field="country" data-filter-value="USA" type="button">Toggle country=USA</button>
+</p>
+<p id="sortDevelopers">
+	Sort:
+	<button data-sort-field="firstName" type="button">Sort by first name</button>
+	<button data-sort-field="lastName" type="button">Sort by last name</button>
+	<button data-sort-field="country" type="button">Sort country</button>
+</p>
+<p id="pageDevelopers">
+	<button data-page="first">First</button>
+	<button data-page="prev">Prev</button>
+	<button data-page="prevStep">-1</button>
+	<span>
+		Page <input class="current" size="4"/>/<span class="total">0</span>,
+		Total records <span class="totalRecords">0</span>
+	</span>
+	<button data-page="nextStep">+1</button>
+	<button data-page="next">Next</button>
+	<button data-page="last">Last</button>
+<p>
+<p>
+<table id="developers-local">
+	<thead>
+		<tr>
+			<th data-field="firstName">First Name</th>
+			<th data-field="lastName">Last Name</th>
+			<th data-field="country">Country</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+</p>
+
+
+<h2>remote data source</h2>
+<p id="filterMovies">
+	Filter:
+	<button data-filter-field="Name" data-filter-operator="like"  data-filter-value="ultra"  type="button">Toggle Name like 'ultra'</button>
+	<button data-filter-field="ReleaseYear" data-filter-operator="<="  data-filter-value="1990"  type="button">Toggle ReleaseYear <= 1990</button>
+	<button data-filter-field="AverageRating" data-filter-operator=">" data-filter-value="3" type="button">Toggle AverageRating > 3</button>
+</p>
+<p id="sortMovies">
+	Sort:
+	<button data-sort-field="Name" type="button">Sort by Name</button>
+	<button data-sort-field="ReleaseYear" type="button">Sort by Release Year</button>
+	<button data-sort-field="AverageRating" type="button">Sort by Average Rating</button>
+</p>
+<p id="pageMovies">
+	<button data-page="first">First</button>
+	<button data-page="prev">Prev</button>
+	<button data-page="prevStep">-1</button>
+	<span>
+		Page <input class="current" size="4"/>/<span class="total">0</span>,
+		Total records <span class="totalRecords">0</span>
+	</span>
+	<button data-page="nextStep">+1</button>
+	<button data-page="next">Next</button>
+	<button data-page="last">Last</button>
+</p>
+<p>
+<table id="movies">
+	<thead>
+		<tr>
+			<th data-field="Name">Name</th>
+			<th data-field="ReleaseYear">Release Year</th>
+			<th data-field="AverageRating">Average Rating</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+</p>
+
+</body>
+</html>

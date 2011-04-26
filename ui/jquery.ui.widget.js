@@ -36,7 +36,9 @@ $.widget = function( name, base, prototype ) {
 	};
 
 	$[ namespace ] = $[ namespace ] || {};
-	$[ namespace ][ name ] = $[ namespace ][ name ] || function( options, element ) {
+	// create the constructor using $.extend() so we can carry over any
+	// static properties stored on the existing constructor (if there is one)
+	$[ namespace ][ name ] = $.extend( function( options, element ) {
 		// allow instantiation without "new" keyword
 		if ( !this._createWidget ) {
 			return new $[ namespace ][ name ]( options, element );
@@ -47,19 +49,45 @@ $.widget = function( name, base, prototype ) {
 		if ( arguments.length ) {
 			this._createWidget( options, element );
 		}
-	};
+	}, $[ namespace ][ name ] );
 
 	var basePrototype = new base();
 	// we need to make the options hash a property directly on the new instance
 	// otherwise we'll modify the options hash on the prototype that we're
 	// inheriting from
 	basePrototype.options = $.extend( true, {}, basePrototype.options );
+	$.each( prototype, function( prop, value ) {
+		if ( $.isFunction( value ) ) {
+			prototype[ prop ] = (function() {
+				var _super = function( method ) {
+					return base.prototype[ method ].apply( this, slice.call( arguments, 1 ) );
+				};
+				var _superApply = function( method, args ) {
+					return base.prototype[ method ].apply( this, args );
+				};
+				return function() {
+					var __super = this._super,
+						__superApply = this._superApply,
+						returnValue;
+
+					this._super = _super;
+					this._superApply = _superApply;
+
+					returnValue = value.apply( this, arguments );
+
+					this._super = __super;
+					this._superApply = __superApply;
+
+					return returnValue;
+				};
+			}());
+		}
+	});
 	$[ namespace ][ name ].prototype = $.extend( true, basePrototype, {
 		namespace: namespace,
 		widgetName: name,
 		widgetEventPrefix: name,
-		widgetBaseClass: fullName,
-		base: base.prototype
+		widgetBaseClass: fullName
 	}, prototype );
 
 	$.widget.bridge( name, $[ namespace ][ name ] );
@@ -76,11 +104,6 @@ $.widget.bridge = function( name, object ) {
 			$.extend.apply( null, [ true, options ].concat(args) ) :
 			options;
 
-		// prevent calls to internal methods
-		if ( isMethodCall && options.charAt( 0 ) === "_" ) {
-			return returnValue;
-		}
-
 		if ( isMethodCall ) {
 			this.each(function() {
 				var instance = $.data( this, name );
@@ -88,12 +111,14 @@ $.widget.bridge = function( name, object ) {
 					return $.error( "cannot call methods on " + name + " prior to initialization; " +
 						"attempted to call method '" + options + "'" );
 				}
-				if ( !$.isFunction( instance[options] ) ) {
+				if ( !$.isFunction( instance[options] ) || options.charAt( 0 ) === "_" ) {
 					return $.error( "no such method '" + options + "' for " + name + " widget instance" );
 				}
 				var methodValue = instance[ options ].apply( instance, args );
 				if ( methodValue !== instance && methodValue !== undefined ) {
-					returnValue = methodValue;
+					returnValue = methodValue.jquery ?
+						returnValue.pushStack( methodValue.get() ) :
+						methodValue;
 					return false;
 				}
 			});
@@ -130,7 +155,10 @@ $.Widget.prototype = {
 	widgetEventPrefix: "",
 	defaultElement: "<div>",
 	options: {
-		disabled: false
+		disabled: false,
+
+		// callbacks
+		create: null
 	},
 	_createWidget: function( options, element ) {
 		element = $( element || this.defaultElement || this )[ 0 ];
@@ -153,18 +181,9 @@ $.Widget.prototype = {
 		this._trigger( "create" );
 		this._init();
 	},
-	_getCreateOptions: function() {
-		return $.metadata && $.metadata.get( this.element[0] )[ this.widgetName ];
-	},
+	_getCreateOptions: $.noop,
 	_create: $.noop,
 	_init: $.noop,
-
-	_super: function( method ) {
-		return this.base[ method ].apply( this, slice.call( arguments, 1 ) );
-	},
-	_superApply: function( method, args ) {
-		return this.base[ method ].apply( this, args );
-	},
 
 	destroy: function() {
 		this._destroy();
@@ -192,19 +211,34 @@ $.Widget.prototype = {
 	},
 
 	option: function( key, value ) {
-		var options = key;
+		var options = key,
+			parts,
+			curOption,
+			i;
 
 		if ( arguments.length === 0 ) {
 			// don't return a reference to the internal hash
 			return $.extend( {}, this.options );
 		}
 
-		if  (typeof key === "string" ) {
+		if ( typeof key === "string" ) {
 			if ( value === undefined ) {
 				return this.options[ key ];
 			}
+			// handle nested keys, e.g., "foo.bar" => { foo: { bar: ___ } }
 			options = {};
-			options[ key ] = value;
+			parts = key.split( "." );
+			key = parts.shift();
+			if ( parts.length ) {
+				curOption = options[ key ] = $.extend( true, {}, this.options[ key ] );
+				for ( i = 0; i < parts.length - 1; i++ ) {
+					curOption[ parts[ i ] ] = curOption[ parts[ i ] ] || {};
+					curOption = curOption[ parts[ i ] ];
+				}
+				curOption[ parts.pop() ] = value;
+			} else {
+				options[ key ] = value;
+			}
 		}
 
 		this._setOptions( options );
@@ -246,6 +280,8 @@ $.Widget.prototype = {
 			handlers = element;
 			element = this.element;
 		} else {
+			// accept selectors, DOM elements
+			element = $( element );
 			this.bindings = this.bindings.add( element );
 		}
 		var instance = this;
@@ -319,5 +355,12 @@ $.Widget.prototype = {
 			event.isDefaultPrevented() );
 	}
 };
+
+// DEPRECATED
+if ( $.uiBackCompat !== false ) {
+	$.Widget.prototype._getCreateOptions = function() {
+		return $.metadata && $.metadata.get( this.element[0] )[ this.widgetName ];
+	}
+}
 
 })( jQuery );

@@ -49,8 +49,8 @@ $.widget("ui.sortable", $.ui.mouse, {
 		//Get the items
 		this.refresh();
 
-		//Let's determine if the items are floating
-		this.floating = this.items.length ? (/left|right/).test(this.items[0].item.css('float')) : false;
+		//Let's determine if the items are being displayed horizontally
+		this.floating = this.items.length ? (/left|right/).test(this.items[0].item.css('float')) || (/inline|table-cell/).test(this.items[0].item.css('display')) : false;
 
 		//Let's determine the parent's offset
 		this.offset = this.element.offset();
@@ -613,6 +613,10 @@ $.widget("ui.sortable", $.ui.mouse, {
 
 		for (var i = this.items.length - 1; i >= 0; i--){
 			var item = this.items[i];
+
+			//We ignore calculating positions of all connected containers when we're not over them
+			if(item.instance != this.currentContainer && this.currentContainer && item.item[0] != this.currentItem[0])
+				continue;
 
 			var t = this.options.toleranceElement ? $(this.options.toleranceElement, item.item) : item.item;
 

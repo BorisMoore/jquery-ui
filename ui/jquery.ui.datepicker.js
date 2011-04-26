@@ -444,7 +444,14 @@ $.extend(Datepicker.prototype, {
 				this._hideDatepicker();
 			}
 			var date = this._getDateDatepicker(target, true);
+			var minDate = this._getMinMaxDate(inst, 'min');
+			var maxDate = this._getMinMaxDate(inst, 'max');
 			extendRemove(inst.settings, settings);
+			// reformat the old minDate/maxDate values if dateFormat changes and a new minDate/maxDate isn't provided
+			if (minDate !== null && settings['dateFormat'] !== undefined && settings['minDate'] === undefined)
+				inst.settings.minDate = this._formatDate(inst, minDate);
+			if (maxDate !== null && settings['dateFormat'] !== undefined && settings['maxDate'] === undefined)
+				inst.settings.maxDate = this._formatDate(inst, maxDate);
 			this._attachments($(target), inst);
 			this._autoSize(inst);
 			this._setDateDatepicker(target, date);
@@ -754,7 +761,7 @@ $.extend(Datepicker.prototype, {
 	_findPos: function(obj) {
 		var inst = this._getInst(obj);
 		var isRTL = this._get(inst, 'isRTL');
-        while (obj && (obj.type == 'hidden' || obj.nodeType != 1)) {
+        while (obj && (obj.type == 'hidden' || obj.nodeType != 1 || $.expr.filters.hidden(obj))) {
             obj = obj[isRTL ? 'previousSibling' : 'nextSibling'];
         }
         var position = $(obj).offset();
@@ -1082,7 +1089,7 @@ $.extend(Datepicker.prototype, {
 		}
 		var date = this._daylightSavingAdjust(new Date(year, month - 1, day));
 		if (date.getFullYear() != year || date.getMonth() + 1 != month || date.getDate() != day)
-			throw 'Invalid date'; // E.g. 31/02/*
+			throw 'Invalid date'; // E.g. 31/02/00
 		return date;
 	},
 
@@ -1568,40 +1575,42 @@ $.extend(Datepicker.prototype, {
 		if (!showMonthAfterYear)
 			html += monthHtml + (secondary || !(changeMonth && changeYear) ? '&#xa0;' : '');
 		// year selection
-		inst.yearshtml = '';
-		if (secondary || !changeYear)
-			html += '<span class="ui-datepicker-year">' + drawYear + '</span>';
-		else {
-			// determine range of years to display
-			var years = this._get(inst, 'yearRange').split(':');
-			var thisYear = new Date().getFullYear();
-			var determineYear = function(value) {
-				var year = (value.match(/c[+-].*/) ? drawYear + parseInt(value.substring(1), 10) :
-					(value.match(/[+-].*/) ? thisYear + parseInt(value, 10) :
-					parseInt(value, 10)));
-				return (isNaN(year) ? thisYear : year);
-			};
-			var year = determineYear(years[0]);
-			var endYear = Math.max(year, determineYear(years[1] || ''));
-			year = (minDate ? Math.max(year, minDate.getFullYear()) : year);
-			endYear = (maxDate ? Math.min(endYear, maxDate.getFullYear()) : endYear);
-			inst.yearshtml += '<select class="ui-datepicker-year" ' +
-				'onchange="DP_jQuery_' + dpuuid + '.datepicker._selectMonthYear(\'#' + inst.id + '\', this, \'Y\');" ' +
-				'onclick="DP_jQuery_' + dpuuid + '.datepicker._clickMonthYear(\'#' + inst.id + '\');"' +
-				'>';
-			for (; year <= endYear; year++) {
-				inst.yearshtml += '<option value="' + year + '"' +
-					(year == drawYear ? ' selected="selected"' : '') +
-					'>' + year + '</option>';
-			}
-			inst.yearshtml += '</select>';
-			//when showing there is no need for later update
-			if( ! $.browser.mozilla ){
-				html += inst.yearshtml;
-				inst.yearshtml = null;
-			} else {
-				// will be replaced later with inst.yearshtml
-				html += '<select class="ui-datepicker-year"><option value="' + drawYear + '" selected="selected">' + drawYear + '</option></select>';
+		if ( !inst.yearshtml ) {
+			inst.yearshtml = '';
+			if (secondary || !changeYear)
+				html += '<span class="ui-datepicker-year">' + drawYear + '</span>';
+			else {
+				// determine range of years to display
+				var years = this._get(inst, 'yearRange').split(':');
+				var thisYear = new Date().getFullYear();
+				var determineYear = function(value) {
+					var year = (value.match(/c[+-].*/) ? drawYear + parseInt(value.substring(1), 10) :
+						(value.match(/[+-].*/) ? thisYear + parseInt(value, 10) :
+						parseInt(value, 10)));
+					return (isNaN(year) ? thisYear : year);
+				};
+				var year = determineYear(years[0]);
+				var endYear = Math.max(year, determineYear(years[1] || ''));
+				year = (minDate ? Math.max(year, minDate.getFullYear()) : year);
+				endYear = (maxDate ? Math.min(endYear, maxDate.getFullYear()) : endYear);
+				inst.yearshtml += '<select class="ui-datepicker-year" ' +
+					'onchange="DP_jQuery_' + dpuuid + '.datepicker._selectMonthYear(\'#' + inst.id + '\', this, \'Y\');" ' +
+					'onclick="DP_jQuery_' + dpuuid + '.datepicker._clickMonthYear(\'#' + inst.id + '\');"' +
+					'>';
+				for (; year <= endYear; year++) {
+					inst.yearshtml += '<option value="' + year + '"' +
+						(year == drawYear ? ' selected="selected"' : '') +
+						'>' + year + '</option>';
+				}
+				inst.yearshtml += '</select>';
+				//when showing there is no need for later update
+				if( ! $.browser.mozilla ){
+					html += inst.yearshtml;
+					inst.yearshtml = null;
+				} else {
+					// will be replaced later with inst.yearshtml
+					html += '<select class="ui-datepicker-year"><option value="' + drawYear + '" selected="selected">' + drawYear + '</option></select>';
+				}
 			}
 		}
 		html += this._get(inst, 'yearSuffix');
@@ -1656,7 +1665,7 @@ $.extend(Datepicker.prototype, {
 
 	/* Find the number of days in a given month. */
 	_getDaysInMonth: function(year, month) {
-		return 32 - new Date(year, month, 32).getDate();
+		return 32 - this._daylightSavingAdjust(new Date(year, month, 32)).getDate();
 	},
 
 	/* Find the day of the week of the first of a month. */
@@ -1726,7 +1735,12 @@ function isArray(a) {
                     Object - settings for attaching new datepicker functionality
    @return  jQuery object */
 $.fn.datepicker = function(options){
-
+	
+	/* Verify an empty collection wasn't passed - Fixes #6976 */
+	if ( !this.length ) {
+		return this;
+	}
+	
 	/* Initialise the date picker. */
 	if (!$.datepicker.initialized) {
 		$(document).mousedown($.datepicker._checkExternalClick).

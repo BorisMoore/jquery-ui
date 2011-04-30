@@ -857,21 +857,21 @@ jQuery.extend({
 				resolveWith: function( context, args ) {
 					if ( !cancelled && !fired && !firing ) {
 						firing = 1;
-						try {
+//						try {
 							while( callbacks[ 0 ] ) {
 								callbacks.shift().apply( context, args );
 							}
-						}
+//						}
 						// We have to add a catch block for
 						// IE prior to 8 or else the finally
 						// block will never get executed
-						catch (e) {
-							throw e;
-						}
-						finally {
+//						catch (e) {
+//							throw e;
+//						}
+//						finally {
 							fired = [ context, args ];
 							firing = 0;
-						}
+//						}
 					}
 					return this;
 				},

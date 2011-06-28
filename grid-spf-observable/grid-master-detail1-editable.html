@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Grid: Selecting</title>
+	<link rel="stylesheet" href="../themes/base/jquery.ui.all.css">
+	<link rel="stylesheet" href="grid.css">
+	<link rel="stylesheet" href="editable.css">
+	<script src="../jquery-1.5.1.js"></script>
+	<script src="../external/jquery.tmpl.js"></script>
+	<script src="../external/jquery.mousewheel-3.0.4.js"></script>
+	<script src="../ui/jquery.ui.core.js"></script>
+	<script src="../ui/jquery.ui.widget.js"></script>
+	<script src="../ui/jquery.ui.mouse.js"></script>
+	<script src="../ui/jquery.ui.button.js"></script>
+	<script src="../ui/jquery.ui.selectable.js"></script>
+	<script src="../ui/jquery.ui.spinner.js"></script>
+	<script src="datasource.js"></script>
+	<script src="datasource-local.js"></script>
+	<script src="grid.js"></script>
+	<script src="pager.js"></script>
+	<script>
+	var localDevelopers;
+	$.ajax({
+		dataType: "json",
+		url: "developers.json",
+		async: false,
+		success: function( result ) {
+			localDevelopers = result;
+		}
+	});
+
+	$(function() {
+		var developers = $.ui.localDatasource({
+			input: localDevelopers,
+			paging: {
+				limit: 4
+			}
+		});
+
+		var developersGrid = $( "#developers-grid" ).grid({
+			source: developers,
+			selectedData: [],
+			refresh: function() {
+				$( this ).find( "tbody tr" ).addClass( function() {
+					if ( $.inArray( $.tmplItem( this ).data, selectedData ) >= 0) {
+						return "ui-selected";
+					}
+				});
+			}
+		}).data( "grid" );
+		
+		$( "#developers-pager" ).pager({
+			source: developers
+		});
+
+//////////////////// Selection support - to be integrated into grid ////////////////////
+		
+		var selectedData = developersGrid.options.selectedData;
+
+		$( "#developers-grid" ).selectable({
+			filter: "tbody tr",
+			start: function( ev, eventArgs ) {
+				if ( !ev.ctrlKey ) {
+					// If ctrlKey not true, remove any other items in selectedData - which may be on other pages than the current one.
+					selectedData.splice( 0, selectedData.length );
+				}
+			},
+			selected: function( ev, eventArgs ) {
+				var dataItem = $.tmplItem( eventArgs.selected ).data;
+				index = $.inArray( dataItem, selectedData );
+				if ( index == -1 ) {
+					selectedData.push( dataItem );
+				}
+			},
+			unselected: function( ev, eventArgs ) {
+				var index = $.inArray( $.tmplItem( eventArgs.unselected ).data, selectedData );
+				if ( index >= 0 ) {
+					selectedData.splice( index, 1 );
+				}
+			},
+			stop: function( ev, eventArgs ) {
+				updateDetailView();
+			}
+		});
+
+		$( ".clearSelection" ).click(function() {
+			selectedData.splice( 0, selectedData.length );
+			developersGrid.element.find("tbody tr").removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state. 
+			updateDetailView();
+		});
+		
+		$( ".invertSelection" ).click(function() {
+			// Clone localDevelopers, and remove items in current selectedData.
+			var inverted = localDevelopers.slice( 0 ),
+				l = selectedData.length;
+			while ( l-- ) {
+				var index = $.inArray( selectedData[l], inverted );
+				inverted.splice( index, 1 );
+			}
+			// Use resulting array as new contents of selectedData array.
+			selectedData.splice( 0, selectedData.length );
+			[].splice.apply( selectedData, [ 0, 0 ].concat( inverted ));
+			developersGrid.element.find("tbody tr").addClass( function( index, currentClass ) {
+				// Avoid re-rendering the grid, for better perf, and to maintain state. 
+				if ( currentClass === "ui-selected" ) {
+					$( this ).removeClass( "ui-selected" );
+				} else {
+					return "ui-selected";
+				} 
+			});
+			updateDetailView();
+		});
+		
+//////////////////// Editing actions ////////////////////
+
+		function updateDetailView() {
+			$( "#developers-detail" ).empty();
+			$( "#detail-template" ).tmpl( selectedData )
+				.appendTo( "#developers-detail" );
+		}
+
+		developers.refresh();
+
+		$( ".addDeveloper" ).click( function () {
+			adding = true;
+			var l = selectedData.length,
+				insertAt = l 
+					? $.inArray( selectedData[ l - 1 ], localDevelopers )
+					: -1,
+				addedData = {
+					firstName: " ",
+					lastName: "",
+					country: ""
+				};
+			[].splice.apply( localDevelopers, [ insertAt+1, 1 ].concat( addedData ));
+			[].splice.apply( selectedData, [ 0, selectedData.length ].concat( addedData ));
+			developers.refresh();
+			developersGrid.refresh();  
+			updateDetailView();
+			adding = false;
+		});
+
+		$( ".deleteSelected" ).click(function() {
+			var l = selectedData.length;
+			while ( l-- ) {
+				deleteItem( selectedData[l], localDevelopers );
+				selectedData.splice( l, 1 );
+			}
+			developers.refresh();
+			updateDetailView();
+		});
+
+		$( "#developers-detail" )
+			.delegate( "#okBtn", "click", function () {
+				// Commit entire form content to data model with one API call.
+				var tmplItem = $.tmplItem( this ),
+					dataItems = $( "input", tmplItem.nodes ).serializeArray();
+					l = dataItems.length;
+				while ( l-- ) {
+					tmplItem.data[ dataItems[l].name ] = dataItems[l].value;
+				}
+				deleteItem( tmplItem.data, selectedData );
+				developersGrid.refresh();  
+				$( tmplItem.nodes ).remove();
+			})
+		
+			.delegate( "#deleteBtn", "click", function () {
+				var item = $.tmplItem( this ).data;
+				deleteItem( item, localDevelopers );
+				deleteItem( item, selectedData );
+				developers.refresh();
+				updateDetailView();
+			});
+
+		function deleteItem( item, array ) {
+			var index = $.inArray( item, array );
+			if ( index > -1 ) {
+				array.splice( index, 1 );
+			};
+		}
+	});
+	</script>
+	<style>
+	.ui-selecting td { background: #eef; }
+	.ui-selected td { background: #ddf; }
+	</style>
+</head>
+<body>
+
+<h1>Grid with master-detail editing</h1>
+
+<p id="developers-pager">
+	<button data-page="first">First</button>
+	<button data-page="prev">Prev</button>
+	<button data-page="prevStep">-1</button>
+	<span>
+		Page <input class="current" size="4"/>/<span class="total">0</span>,
+		Total records <span class="totalRecords">0</span>
+	</span>
+	<button data-page="nextStep">+1</button>
+	<button data-page="next">Next</button>
+	<button data-page="last">Last</button>
+</p>
+
+<p>
+	<button class="clearSelection">Clear selection</button>
+	<button class="invertSelection">Invert selection</button>
+</p>
+
+<p>
+	<button class="addDeveloper" >Insert developer</button>
+	<button class="deleteSelected">Delete selected developers</button>
+</p>
+
+<table id="developers-grid">
+	<thead>
+		<tr>
+			<th data-field="firstName">First Name</th>
+			<th data-field="lastName">Last Name</th>
+			<th data-field="country">Country</th>
+			<th data-field="bitcoins" data-type="number">Bitcoins</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+
+<div id="developers-detail"></div>
+
+<script id="detail-template" type="text/x-jquery-tmpl">
+	<div>
+		<div class="title">{{if adding}}Add{{else}}Edit{{/if}} Person</div>
+		<div><input name="firstName" value="${firstName}"/></div>
+		<div><input name="lastName" value="${lastName}"/></div>
+		<div><input name="country" value="${country}"/></div>
+		<span id="okBtn" >OK</span>
+		<span id="deleteBtn" >Delete</span>
+	</div>
+</script>
+
+</body>
+</html>

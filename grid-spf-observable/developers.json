@@ -1,0 +1,98 @@
+[
+	{
+		"firstName": "Richard",
+		"lastName": "Worth",
+		"country": "USA",
+		"twitter": "rworth",
+		"github": "rdworth",
+		"bitcoins": 150,
+		"random": {
+			"value": 10
+		},
+		"favorites": [1, 2, 3]
+	},
+	{
+		"firstName": "Scott",
+		"lastName": "González",
+		"country": "USA",
+		"twitter": "scott_gonzalez",
+		"github": "scottgonzalez",
+		"bitcoins": 10,
+		"random": {
+			"value": 20
+		},
+		"favorites": [1, 2, 3]
+	},
+	{
+		"firstName": "Jörn",
+		"lastName": "Zaefferer",
+		"country": "Germany",
+		"twitter": "bassistance",
+		"github": "jzaefferer",
+		"bitcoins": 1,
+		"random": {
+			"value": 30
+		},
+		"favorites": [1, 2, 3]
+	},
+	{
+		"firstName": "Carl",
+		"lastName": "Worth",
+		"country": "Canada",
+		"twitter": "cworth",
+		"github": "cworth",
+		"bitcoins": 1500,
+		"random": {
+			"value": 40
+		},
+		"favorites": [1, 2, 3]
+	},
+	{
+		"firstName": "Adam",
+		"lastName": "Piano",
+		"country": "USA",
+		"twitter": "ajpiano",
+		"github": "ajpiano",
+		"bitcoins": 1337,
+		"random": {
+			"value": 50
+		},
+		"favorites": [1, 2, 3]
+	},
+	{
+		"firstName": "Remy",
+		"lastName": "Sharp",
+		"country": "UK",
+		"twitter": "rem",
+		"github": "rem",
+		"bitcoins": 55.5,
+		"random": {
+			"value": 60
+		},
+		"favorites": [1, 2, 3]
+	},
+	{
+		"firstName": "Benjamin",
+		"lastName": "Lupton",
+		"country": "Australia",
+		"twitter": "balupton",
+		"github": "balupton",
+		"bitcoins": 2501,
+		"random": {
+			"value": 70
+		},
+		"favorites": [1, 2, 3]
+	},
+	{
+		"firstName": "Haymo",
+		"lastName": "Meran",
+		"country": "Austria",
+		"twitter": "draftkraft",
+		"github": "",
+		"bitcoins": 0,
+		"random": {
+			"value": 80
+		},
+		"favorites": [1, 2, 3]
+	}
+]

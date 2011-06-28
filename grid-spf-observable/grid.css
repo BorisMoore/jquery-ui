@@ -1,0 +1,11 @@
+body { font-size: 62.5%; }
+
+table {
+	border-collapse: collapse;
+}
+th, td {
+	padding: 0.5em;
+	border: 1px solid black;
+	height:14px;
+}
+.grid-selected-row td { background: #D3EBE1; }

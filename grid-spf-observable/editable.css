@@ -1,0 +1,7 @@
+#developers-detail > div { border: 1px solid #222; width: 260px; padding: 2px; background-color: #eee; margin-bottom: 4px; }
+#developers-detail div div { margin: 2px; }
+#developers-detail input { padding: 2px; width: 245px; margin: 1px; border: 1px solid #333 }
+#developers-detail .title { font-weight: bold; font-size:9pt; }
+#developers-detail div { float: left; clear: both; }
+#developers-detail, #developers-grid { float: left; margin-right: 10px; }
+#okBtn, #deleteBtn { float: right; text-decoration: underline; font-style: italic; color: blue; cursor:pointer; padding: 0 5px 0 15px; }

@@ -133,8 +133,9 @@
 					lastName: "",
 					country: ""
 				};
-			[].splice.apply( localDevelopers, [ insertAt+1, 1 ].concat( addedData ));
+			[].splice.apply( localDevelopers, [ insertAt+1, 0 ].concat( addedData ));
 			[].splice.apply( selectedData, [ 0, selectedData.length ].concat( addedData ));
+			
 			developers.refresh();
 			developersGrid.refresh();  
 			updateDetailView();

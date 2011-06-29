@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Grid: Selecting</title>
+	<title>Grid: master-detail - read only</title>
 	<link rel="stylesheet" href="../themes/base/jquery.ui.all.css">
 	<link rel="stylesheet" href="grid.css">
 	<link rel="stylesheet" href="detail.css">
@@ -38,7 +38,7 @@
 			}
 		});
 
-		var developersGrid = $( "#developers-grid" ).grid({
+		var developersGrid = $.ui.grid({
 			source: developers,
 			selectedData: [],
 			refresh: function() {
@@ -48,7 +48,7 @@
 					}
 				});
 			}
-		}).data( "grid" );
+		}, "#developers-grid" );
 		
 		$( "#developers-pager" ).pager({
 			source: developers
@@ -128,7 +128,6 @@
 				localDevelopers.splice( $.inArray( item, localDevelopers ), 1 );
 			}
 			developers.refresh();
-			pager.refresh();
 			updateDetailView();
 		});
 	});
@@ -140,7 +139,7 @@
 </head>
 <body>
 
-<h1>Grid with selectable rows</h1>
+<h1>Grid master-detail - read only</h1>
 
 <p id="developers-pager">
 	<button data-page="first">First</button>

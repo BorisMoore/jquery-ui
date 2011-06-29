@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Grid: Selecting</title>
+	<title>Grid: with master-detail - JsViews integration</title>
 	<link rel="stylesheet" href="../themes/base/jquery.ui.all.css">
 	<link rel="stylesheet" href="grid.css">
 	<link rel="stylesheet" href="editable.css">
@@ -17,9 +17,9 @@
 	<script src="../ui/jquery.ui.button.js"></script>
 	<script src="../ui/jquery.ui.selectable.js"></script>
 	<script src="../ui/jquery.ui.spinner.js"></script>
-	<script src="datasource2.js"></script>
+	<script src="datasource2-observable.js"></script>
 	<script src="datasource-local.js"></script>
-	<script src="grid3.js"></script>
+	<script src="grid3-jsviews.js"></script>
 	<script src="pager.js"></script>
 	<script>
 	var localDevelopers;
@@ -40,12 +40,12 @@
 			}
 		});
 
-		var developersGrid = $( "#developers-grid" ).grid({
+		var developersGrid = $.ui.grid({
 			source: developers.toArray(),
 			selectedData: [],
 			render: refreshSelection
-		}).data( "grid" );
-		
+		}, "#developers-grid" );
+
 		$( "#developers-pager" ).pager({
 			source: developers
 		});
@@ -180,7 +180,7 @@
 </head>
 <body>
 
-<h1>Grid with master-detail editing</h1>
+<h1>Grid with master-detail - JsViews integration</h1>
 
 <p id="developers-pager">
 	<button data-page="first">First</button>

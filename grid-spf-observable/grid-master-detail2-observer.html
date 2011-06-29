@@ -100,14 +100,7 @@
 			}
 			// Use resulting array as new contents of selectedData array.
 			$.observable( selectedData ).refresh( inverted );
-			developersGrid.element.find( "tbody tr" ).addClass( function( index, currentClass ) {
-				// Avoid re-rendering the grid, for better perf, and to maintain state. 
-				if ( currentClass === "ui-selected" ) {
-					$( this ).removeClass( "ui-selected" );
-				} else {
-					return "ui-selected";
-				} 
-			});
+			developersGrid.element.find("tbody tr").toggleClass( "ui-selected" );
 			updateDetailView();
 		});
 		

@@ -38,7 +38,7 @@
 			}
 		});
 
-		var developersGrid = $( "#developers-grid" ).grid({
+		var developersGrid = $.ui.grid({
 			source: developers,
 			selectedData: [],
 			refresh: function() {
@@ -48,8 +48,8 @@
 					}
 				});
 			}
-		}).data( "grid" );
-		
+		}, "#developers-grid" );
+
 		$( "#developers-pager" ).pager({
 			source: developers
 		});

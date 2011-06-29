@@ -17,9 +17,9 @@
 	<script src="../ui/jquery.ui.button.js"></script>
 	<script src="../ui/jquery.ui.selectable.js"></script>
 	<script src="../ui/jquery.ui.spinner.js"></script>
-	<script src="datasource2.js"></script>
+	<script src="datasource2-observable.js"></script>
 	<script src="datasource-local.js"></script>
-	<script src="grid4.js"></script>
+	<script src="grid4-selectable.js"></script>
 	<script src="pager.js"></script>
 	<script>
 	var localDevelopers;
@@ -40,9 +40,9 @@
 			}
 		});
 
-		var developersGrid = $( "#developers-grid" ).grid({
+		var developersGrid = $.ui.grid({
 			source: developers.toArray()
-		}).data( "grid" );
+		}, "#developers-grid" );
 		
 		var selectedData = developersGrid.selected();
 		

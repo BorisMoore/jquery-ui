@@ -1,0 +1,7 @@
+.editperson > div { border: 1px solid #222; width: 260px; padding: 2px; background-color: #eee; }
+.editperson div div { margin: 3px; }
+.editperson input { padding: 2px; width: 245px; margin: 1px; border: 1px solid #333 }
+.editperson .title { font-weight: bold; font-size:10pt; }
+.editperson div { float: left; clear: both; }
+.editperson, #developers-data { float: left; margin-right: 10px;}
+#okBtn, #deleteBtn { float: right; text-decoration: underline; font-style: italic; color: blue; cursor:pointer; padding: 0 5px 0 15px; }

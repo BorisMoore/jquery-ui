@@ -50,7 +50,7 @@
 			},
 			objectchange: function(event, ui) {
 				console.log("developer at index", ui.index, "changed", ui.object);
-				this.save();
+				this.save().refresh();
 			},
 			change: function(event, ui) {
 				console.log("developer(s) at index", ui.index, ui.change + "ed", ui.items);
@@ -69,6 +69,7 @@
 		grid.element.gridEditor({
 			items: "td:not(:has(button))",
 			type: function(cell) {
+				// TODO should be possible to retrieve this from grid.options.columns
 				return grid.element.find( "th" ).eq( cell[ 0 ].cellIndex ).data( "type" );
 			},
 			submit: function( event, ui) {
@@ -81,28 +82,16 @@
 					oldValue: oldValue,
 					newValue: ui.value
 				});
-				developers._trigger("objectchange", event, {
-					object: object
-				});
 				// for the navigator
 				grid.element.focus();
 			}
 		});
 		grid.element.navigator();
 
-		// TODO find a better way to add markup to the generated row template
-		grid.options.rowTemplate = grid.options.rowTemplate.substring( 0, grid.options.rowTemplate.length - 35 )
-			+ "<button class='edit'>Edit</button></td>"
-			+ "<td><button class='remove'>Remove</button></td></tr>";
-
 		var developer, tmplItem;
 		var editForm = $( "#editForm" ).hide().submit( function( event ) {
 			event.preventDefault();
 			serializeForm( this, developer );
-			// TODO the ui-widget class is added after rendering the template by the grid
-			// therefore just rerendering the row looks bad, need to update the template to include the classes
-			// or extend the grid to refresh a single row - need that anyway, as currently the inline editor breaks
-			tmplItem.update();
 			developers._trigger("objectchange", event, {
 				index: localDevelopers.indexOf(developer),
 				object: developer
@@ -151,10 +140,21 @@
 		$("form").tooltip();
 
 		developers.refresh();
+
+		$.widget("ui.datalist", {
+			_create: function() {
+				$.ui.datalist.lists.push(this.options);
+			}
+		});
+		$.ui.datalist.lists = [];
+		$.ui.datalist({
+			name: "countries",
+			items: ["USA", "Germany", "China", "Canada", "UK", "Australia", "Austria"]
+		});
 	});
 	</script>
 	<style>
-		.navigator-active { border: 2px solid blue; }
+		.navigator-active { background: rgba(0,0,255,0.1); }
 	</style>
 </head>
 <body>
@@ -179,11 +179,11 @@
 		<tr>
 			<th data-field="firstName">First Name</th>
 			<th data-field="lastName">Last Name</th>
-			<th data-field="country">Country</th>
+			<th data-field="country" data-list="countries">Country</th>
 			<th data-field="bitcoins" data-type="number">Bitcoins</th>
 			<th data-field="random.value" data-type="number">Random</th>
-			<th>Edit</th>
-			<th>Remove</th>
+			<th data-template="#cell-edit-tmpl">Edit</th>
+			<th data-template="#cell-remove-tmpl">Remove</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -208,6 +208,12 @@
 {{else}}
 	<input type="text" name="${name}" placeholder="${label}" value="${value}" title="${label}" />
 {{/if}}
+</script>
+<script id="cell-edit-tmpl" type="text/x-jquery-tmpl">
+	<td><button class='edit'>Edit</button></td>
+</script>
+<script id="cell-remove-tmpl" type="text/x-jquery-tmpl">
+	<td><button class='remove'>Remove</button></td>
 </script>
 
 </body>

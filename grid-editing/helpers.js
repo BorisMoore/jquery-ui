@@ -43,7 +43,7 @@ function meta( input ) {
 			label: capitalize(key),
 			value: input[ key ]
 		};
-		if ( $.isPlainObject(field.value) ) {
+		if ( $.isPlainObject(field.value) && field.value.toJSON === undefined ) {
 			for (subkey in field.value) {
 				field.name += "." + subkey;
 				field.value = field.value[ subkey ];

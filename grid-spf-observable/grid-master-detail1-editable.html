@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Grid: Editable master detail</title>
+	<title>Grid: master-detail - editable</title>
 	<link rel="stylesheet" href="../themes/base/jquery.ui.all.css">
 	<link rel="stylesheet" href="grid.css">
 	<link rel="stylesheet" href="editable.css">
@@ -38,7 +38,7 @@
 			}
 		});
 
-		var developersGrid = $( "#developers-grid" ).grid({
+		var developersGrid = $.ui.grid({
 			source: developers,
 			selectedData: [],
 			refresh: function() {
@@ -48,8 +48,8 @@
 					}
 				});
 			}
-		}).data( "grid" );
-		
+		}, "#developers-grid" );
+
 		$( "#developers-pager" ).pager({
 			source: developers
 		});

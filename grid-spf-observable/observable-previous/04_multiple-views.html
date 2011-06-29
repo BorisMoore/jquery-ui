@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Multiple grids and Observable Data</title>
+	<link rel="stylesheet" href="../../themes/base/jquery.ui.all.css"/>
+	<link rel="stylesheet" href="grid.css"/>
+	<link href="editable.css" rel="stylesheet"/>
+	<script src="../../jquery-1.5.1.js"></script>
+	<script src="jquery.observable.js" type="text/javascript"></script>
+	<script src="jquery.render.js" type="text/javascript"></script>
+	<script src="jquery.views.js" type="text/javascript"></script>
+	<script src="../../ui/jquery.ui.core.js"></script>
+	<script src="jquery.ui.widget2.js"></script>
+	<script src="../../ui/jquery.ui.button.js"></script>
+	<script src="datasource.js"></script>
+	<script src="datasource-local.js"></script>
+	<script src="grid.js"></script>
+	<script src="pager.js"></script>
+
+	<script>
+
+	var developersData = [], developersInput, developersDatasource, developersDataGrid, selectedItem, adding = false;
+	$.ajax({
+		dataType: "json",
+		url: "../developers.json",
+		async: false,
+		success: function( result ) {
+			developersInput= result;
+		}
+	});
+
+	$.fn.filterControl = function( datasource ) {
+		this.addClass( "tool" ).find( "button" ).click( function() {
+			var field = $( this ).data( "filter-field" ),
+				value = $( this ).data( "filter-value" ),
+				operator = $( this ).data( "filter-operator" );
+			var key = "filter." + field;
+			// TODO nested getter support would be nice here
+			if ( datasource.option( "filter" ) && datasource.option( "filter" )[ field ]) {
+				datasource.option( key, null );
+			} else {
+				datasource.option( key, {
+					value: value,
+					operator: operator
+				});
+			}
+			datasource.refresh();
+
+			$( this ).toggleClass( "active" );
+		})
+		return this;
+	}
+
+	$.fn.sorterControl = function( datasource ) {
+		// TODO see above
+		var sorted = {};
+		this.addClass( "tool" ).find( "button" ).click( function() {
+			var field = $( this ).data( "sort-field" );
+			if ( sorted[ field ]) {
+				if ( sorted[ field ].charAt(0) == "-" ) {
+					delete sorted[ field ];
+					$( this ).removeClass( "active sort-desc" );
+				} else {
+					sorted[ field ] = "-" + sorted[ field ];
+					$( this ).removeClass( "sort-asc" ).addClass( "sort-desc" );
+				}
+			} else {
+				sorted[ field ] = field;
+				$( this ).addClass( "active sort-asc" );
+			}
+			var sort = [];
+			for ( var key in sorted ) {
+				sort.push( sorted[ key ]);
+			}
+			datasource.option( "sort", sort ).refresh();
+		})
+		return this;
+	}
+
+	$( function() {
+		//  use localDatasource to provide filtered and sorted views of developersInput data
+		developersDatasource = $.ui.localDatasource({ // better naming might be "dataview"?
+			input: developersInput, // better naming might be "data"
+			data: developersData,   // better naming might be "view"
+			paging: {
+				limit: 4
+			}
+		});
+
+		developersDataGrid = $( "#developers-data" ).grid({
+			selectMode: "single",
+			columns: [ "firstName", "lastName", "country" ],
+			source: developersInput,
+			select: onSelectChange
+		}).data( "grid" );
+
+		$( "#developers-view" ).grid({
+			selectMode: "none",
+			columns: [ "firstName", "lastName", "country" ],
+			source: developersData
+		});
+
+		$( "#filterDevelopers" ).filterControl( developersDatasource );
+		$( "#sortDevelopers" ).sorterControl( developersDatasource );
+		$( "#pageDevelopers" ).pager({
+			source: developersDatasource
+		});
+
+		developersDatasource.refresh();
+
+		developersDataGrid.select( 0 );
+
+		function onSelectChange( event, args ) {
+			if ( itemInvalid( selectedItem ) ) {
+				$.observable( developersInput ).splice( selectedItem.index, 1 );
+			}
+			if ( args.selectedItem ) {
+				selectedItem = args.selectedItem;
+				$( "#developerDetail" )
+					.empty()
+					.append(
+						$( "#detailViewTemplate" ).render( selectedItem.data )
+					)
+					.dataLink( selectedItem.data );
+			} else {
+				$( "#developerDetail" ).empty();
+				selectedItem = null;
+			}
+		}
+
+		function itemInvalid( item ) {
+			var data = item && item.data;
+			return data && (data.firstName.length + data.lastName.length + data.country.length) === 0;
+		}
+
+		function deleteSelectedDeveloper() {
+			var selectedItem = developersDataGrid.options.selectedItem;
+			if ( selectedItem ) {
+				var index = selectedItem.index;
+				if ( itemInvalid( selectedItem )) {
+					index++; // Just need to set selection. Deletion will occur in onSelectChange
+				} else {
+					$.observable( developersInput ).splice( index, 1 );
+				}
+				developersDataGrid.select( index );
+			}
+		}
+
+		$("#addDeveloper" ).click( function () {
+			if ( itemInvalid( selectedItem )) {
+				return; // Current added developer has not been committed
+			}
+			adding = true;
+			var selectedItem = developersDataGrid.options.selectedItem,
+				insertAt = selectedItem ? selectedItem.index : developersDataGrid.options.viewItems.length,
+				addedData = {
+					firstName: "",
+					lastName: "",
+					country: ""
+				};
+			$.observable( developersInput ).splice( insertAt, 0, addedData );
+			developersDataGrid.select( insertAt );
+			adding = false;
+		});
+
+		$( "#deleteDeveloper" ).click( function () {
+			deleteSelectedDeveloper();
+		});
+
+		$( "#developerDetail" )
+			.delegate( "#okBtn", "click", function () {
+				developersDataGrid.select();
+			})
+			.delegate( "#deleteBtn", "click", function () {
+				deleteSelectedDeveloper();
+			});
+	});
+	</script>
+
+	<style>
+		.tool button {
+			border: 1px solid white;
+		}
+		.tool button.active {
+			border: 1px solid black;
+		}
+		.sort-asc:before {
+			content: "/\\"
+		}
+		.sort-desc:before {
+			content: "\\/"
+		}
+	</style>
+</head>
+<body>
+
+<h1>Sorted and unsorted grids with editable data</h1>
+
+<h2>Sorted filtered and paged data, using datasource</h2>
+
+<p id="filterDevelopers">
+	Filter:
+	<button data-filter-field="firstName" data-filter-value="Scott" type="button">Toggle firstName=Scott</button>
+	<button data-filter-field="lastName" data-filter-value="Worth"  type="button">Toggle lastName=Worth</button>
+	<button data-filter-field="country" data-filter-value="USA" type="button">Toggle country=USA</button>
+	<button data-filter-field="country" data-filter-value="au" data-filter-operator="like" type="button">Toggle country like 'au'</button>
+</p>
+<p id="sortDevelopers">
+	Sort:
+	<button data-sort-field="firstName" type="button">Sort by first name</button>
+	<button data-sort-field="lastName" type="button">Sort by last name</button>
+	<button data-sort-field="country" type="button">Sort country</button>
+</p>
+<p id="pageDevelopers">
+	<button data-page="first">First</button>
+	<button data-page="prev">Prev</button>
+	<button data-page="prevStep">-1</button>
+	<span>
+		Page <input class="current" size="4"/>/<span class="total">0</span>,
+		Total records <span class="totalRecords">0</span>
+	</span>
+	<button data-page="nextStep">+1</button>
+	<button data-page="next">Next</button>
+	<button data-page="last">Last</button>
+</p>
+
+<table id="developers-view">
+	<thead>
+		<tr>
+			<th data-field="firstName">First Name</th>
+			<th data-field="lastName">Last Name</th>
+			<th data-field="country">Country</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+
+<h2>Modify data (changes linked to both grids)</h2>
+
+<button id="addDeveloper" >Insert developer</button>
+<button id="deleteDeveloper" >Delete selected developer</button>
+
+<h2>Unsorted grid</h2>
+
+<table id="developers-data">
+	<thead>
+		<tr>
+			<th data-field="firstName">First Name</th>
+			<th data-field="lastName">Last Name</th>
+			<th data-field="country">Country</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+
+<div id="developerDetail" class="editperson"></div>
+
+<script id="detailViewTemplate" type="text/x-jquery-tmpl">
+	<div>
+		<div class="title">{{if adding}}Add{{else}}Edit{{/if}} Person</div>
+		<div><input data-jq-linkfrom="firstName" data-jq-linkto="firstName" value="${firstName}"/></div>
+		<div><input data-jq-linkfrom="lastName" data-jq-linkto="lastName" value="${lastName}"/></div>
+		<div><input data-jq-linkfrom="country" data-jq-linkto="country" value="${country}"/></div>
+		<span id="okBtn" >OK</span>
+		<span id="deleteBtn" >Delete</span>
+	</div>
+</script>
+
+</body>
+</html>

@@ -30,7 +30,7 @@ var topView, settings, decl,
 
 			while ( l-- && !cancel ) {
 				link = links[ l ];
-				if ( link.from && $( source ).is( link.from )) {
+				if ( !link.from || (link.from && $( source ).is( link.from ))) {
 					fromAttr = link.fromAttr;
 					if ( !fromAttr ) {
 						// Merge in the default attribute bindings for this source element
@@ -119,7 +119,7 @@ var topView, settings, decl,
 				if ( !attr ) {
 					// Merge in the default attribute bindings for this target element
 					attr = settings.merge[ target.nodeName.toLowerCase() ];
-					attr = attr? attr.to.toAttr : "text";
+					attr = attr ? attr.to.toAttr : "text";
 				}
 
 				if ( css = attr.indexOf( "css-" ) === 0 && attr.substr( 4 ) ) {

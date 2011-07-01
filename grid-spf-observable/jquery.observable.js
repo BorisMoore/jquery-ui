@@ -61,7 +61,7 @@
 						} else {
 							leaf[ path ] = value;
 						}
-						$( object ).triggerHandler( "propertyChange", { path: path, value: value });
+						$( leaf ).triggerHandler( "propertyChange", { path: path, value: value });
 					}
 				}
 			}

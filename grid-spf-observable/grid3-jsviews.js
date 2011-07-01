@@ -64,22 +64,22 @@ $.widget( "ui.grid", {
 		}).get();
 	},
 	_rowTemplate: function() {
-		if ( this.options.rowTemplate ) {
-			return;
+		if ( !this.options.rowTemplate ) {
+			var headers = this.element.find( "th" );
+			var template = $.map( this.options.columns, function( field, index ) {
+				// TODO how to specify a custom template using the columns option?
+				// make columns array-of-objects (optional) to contain all the potential data attributes?
+				// should then output those when generating the columns
+				var customTemplate = headers.eq( index ).data( "template" );
+				if ( customTemplate ) {
+					return $(customTemplate).html();
+				}
+				return "<td class='ui-widget-content' data-getfrom='[" + field + "]' />";
+			}).join( "" );
+			template = "<tr>" + template + "</tr>";
+			this.options.rowTemplate = template;
 		}
-		var headers = this.element.find( "th" );
-		var template = $.map( this.options.columns, function( field, index ) {
-			// TODO how to specify a custom template using the columns option?
-			// make columns array-of-objects (optional) to contain all the potential data attributes?
-			// should then output those when generating the columns
-			var customTemplate = headers.eq( index ).data( "template" );
-			if ( customTemplate ) {
-				return $(customTemplate).html();
-			}
-			return "<td class='ui-widget-content' data-getfrom='[" + field + "]' />";
-		}).join( "" );
-		template = "<tr>" + template + "</tr>";
-		this.options.rowTemplate = template;
+		this.options.rowTemplate = $.template( this.options.rowTemplate ); // Compile the template, for better perf
 	}
 });
 

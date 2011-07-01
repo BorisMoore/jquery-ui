@@ -124,6 +124,7 @@
 	</script>
 	<style>
 		.navigator-active { background: rgba(0,0,255,0.1); }
+		#editForm input[type=text] { width: 70px; }
 	</style>
 </head>
 <body>
@@ -143,6 +144,8 @@
 	<button data-page="next">Next</button>
 	<button data-page="last">Last</button>
 </p>
+
+<div style="float: left; clear:both;">
 <table id="developers-local">
 	<thead>
 		<tr>
@@ -159,14 +162,14 @@
 	</tbody>
 </table>
 
-<div>
-	<button id="addDeveloper">Insert new developer</button>
-</div>
+<p><button id="addDeveloper">Insert new developer</button></p>
+
 <form id="editForm">
 	<fieldset>
 	</fieldset>
-	<input type="submit" value="Save changes" />
+	<p><input type="submit" value="Save changes" /></p>
 </form>
+</div>
 
 <script id="cell-edit-tmpl" type="text/x-jquery-tmpl">
 	<td><button class='edit'>Edit</button></td>

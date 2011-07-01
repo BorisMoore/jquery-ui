@@ -35,11 +35,13 @@ $.widget( "ui.grid", {
 				afterChange: function( ev, eventData ) {
 					switch ( ev.type ) {
 						case "arrayChange" :
+							tbody.find( "td" ).addClass( "ui-widget-content" );
 							that._trigger("render");
 							break;
 					}
 				}
-			});
+			})
+			.find( "td" ).addClass( "ui-widget-content" );
 			
 		this._trigger("render");
 	},
@@ -75,7 +77,7 @@ $.widget( "ui.grid", {
 				if ( customTemplate ) {
 					return $(customTemplate).html();
 				}
-				return "<td class='ui-widget-content' data-getfrom='[" + field + "]' />";
+				return "<td data-getfrom='[" + field + "]' />";
 			}).join( "" );
 			template = "<tr>" + template + "</tr>";
 			this.options.rowTemplate = template;

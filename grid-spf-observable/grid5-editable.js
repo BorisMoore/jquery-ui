@@ -15,6 +15,29 @@ $.widget( "ui.grid", {
 		columns: null,
 		rowTemplate: null
 	},
+	render: function( data ) {
+		var tbody = this.itemContainer,
+			that = this,
+			template = this.options.rowTemplate;
+
+		tbody.html( $.render( template, data  ))
+			.link( data, {
+				afterChange: function( ev, eventData ) {
+					//that._trigger( "dataChange", eventData );
+					switch ( ev.type ) {
+						case "arrayChange" :
+							tbody.find( "td" ).addClass( "ui-widget-content" );
+							that._trigger("render");
+							break;
+					}
+					$( that ).triggerHandler( "afterChange", eventData );
+				}
+			})
+			.find( "td" ).addClass( "ui-widget-content" );
+
+		this._trigger("render");
+		return this;
+	},
 	_create: function() {
 		var that = this;
 		this.itemContainer = this.element.find( "tbody" ); // TODO this code assumes a single tbody which is not a safe assumption
@@ -23,27 +46,6 @@ $.widget( "ui.grid", {
 		this._editTemplate();
 		this.element.addClass( "ui-widget" );
 		this.element.find( "th" ).addClass( "ui-widget-header" );
-	},
-	render: function() {
-		var tbody = this.itemContainer,
-			that = this,
-			template = this.options.rowTemplate,
-			source = this.options.source;
-
-		tbody.html( $.render( template, source ))
-			.link( source, { 
-				afterChange: function( ev, eventData ) {
-					switch ( ev.type ) {
-						case "arrayChange" :
-							tbody.find( "td" ).addClass( "ui-widget-content" );
-							that._trigger("render");
-							break;
-					}
-				}
-			})
-			.find( "td" ).addClass( "ui-widget-content" );
-			
-		this._trigger("render");
 	},
 	_columns: function() {
 		if ( this.options.columns ) {

@@ -49,13 +49,13 @@
 				});
 			}
 		}, "#developers-grid" );
-		
+
 		$( "#developers-pager" ).pager({
 			source: developers
 		});
 
 //////////////////// Selection support - to be integrated into grid ////////////////////
-		
+
 		var selectedData = developersGrid.options.selectedData;
 
 		$( "#developers-grid" ).selectable({
@@ -86,10 +86,10 @@
 
 		$( ".clearSelection" ).click(function() {
 			selectedData.splice( 0, selectedData.length );
-			developersGrid.element.find("tbody tr").removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state. 
+			developersGrid.element.find("tbody tr").removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state.
 			updateDetailView();
 		});
-		
+
 		$( ".invertSelection" ).click(function() {
 			// Clone localDevelopers, and remove items in current selectedData.
 			var inverted = localDevelopers.slice( 0 ),
@@ -104,7 +104,7 @@
 			developersGrid.element.find("tbody tr").toggleClass( "ui-selected" );
 			updateDetailView();
 		});
-		
+
 //////////////////// Editing action ////////////////////
 
 		function updateDetailView() {

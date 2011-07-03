@@ -54,7 +54,7 @@
 
 		var selectedData = developersGrid.options.selectedData;
 
-		function refreshSelection() { 
+		function refreshSelection() {
 			$( "#developers-grid tbody tr" ).addClass( function( index, currentClass ) {
 				if ( $.inArray( $.view( this ).data, selectedData ) >= 0) {
 					return "ui-selected";
@@ -85,12 +85,12 @@
 				}
 			}
 		});
-		
+
 		$( ".clearSelection" ).click( function() {
 			$.observable( selectedData ).remove( 0, selectedData.length );
-			developersGrid.element.find( "tbody tr" ).removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state. 
+			developersGrid.element.find( "tbody tr" ).removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state.
 		});
-		
+
 		$( ".invertSelection" ).click( function() {
 			// Clone localDevelopers, and remove items in current selectedData.
 			var inverted = localDevelopers.slice( 0 ),
@@ -107,11 +107,11 @@
 
 		developers.refresh();
 		developersGrid.render();
-				
+
 		$( ".addDeveloper" ).click( function () {
 			adding = true;
 			var l = selectedData.length,
-				insertAt = l 
+				insertAt = l
 					? $.inArray( selectedData[ l - 1 ], localDevelopers )
 					: -1,
 				addedData = {
@@ -137,15 +137,15 @@
 		$( "#developers-detail" )
 			.html( $( "#detail-template" ).render( selectedData ))
 
-			.link( selectedData ) 
+			.link( selectedData )
 
 			.delegate( "#okBtn", "click", function () {
 				// Commit entire form content to data model with one API call.
 				var view = $.view( this ),
 					newData = $( "input", view.nodes ).serializeArray();
-				
+
 				$.observable( view.data ).setProperty( newData );
-				
+
 				deleteItem( view.data, selectedData );
 				refreshSelection();
 			})

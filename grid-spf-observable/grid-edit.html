@@ -33,72 +33,69 @@
 	if ( !window.console ) {
 		window.console = {
 			log: function() {
-				var message = Array.prototype.slice.call( arguments, 1 ).join( ", " );
+				var message = Array.prototype.slice.call( arguments, 0 ).join( ", " );
 				$("<div>").text( message ).appendTo("body");
 			}
 		}
 	}
 
 	var store = $.demos.localstore( {
-		key: "grid-editing-developers",
-		initial: "../grid-spf/developers.json"
-	});
-	var localDevelopers = store.load();
+			key: "grid-editing-developers",
+			initial: "../grid-spf/developers.json"
+		}),
+
+		localDevelopers = store.load();
+
 	$(function() {
-		var developers = $.ui.localDataview({
-			input: localDevelopers,
-			paging: {
-				limit: 6
-			}
-		});
-		
-		$([ localDevelopers ]).bind( "arrayChange", function( ev, eventData ) {
-				console.log("developer at index", eventData.index, eventData.change + "ed", eventData.items);
-				store.save( localDevelopers );
-		});
-	
-		var grid = $.ui.grid( {
-			source: developers.output
-		}, "#developers-local" );
+		var developer, view,
+			developers = $.ui.localDataview({
+				input: localDevelopers,
+				paging: {
+					limit: 6
+				}
+			}),
 
-		grid.element.gridEditor({
-			items: "td:not(:has(button))",
-			type: function(cell) {
-				// TODO should be possible to retrieve this from grid.options.columns
-				return grid.element.find( "th" ).eq( cell[ 0 ].cellIndex ).data( "type" );
-			},
-			submit: function( event, ui) {
-				var object = ui.item.view().data,
-					field = grid.element.find( "th" ).eq( ui.item[ 0 ].cellIndex ).data( "field" );
-				
-				$.observable( object ).setProperty( field, ui.value );
-				
-				// for the navigator
-				grid.element.focus();
-			}
-		});
-		grid.element.navigator();
+			editForm = $( "#editForm" ).hide().submit( function( event ) {
+					event.preventDefault();
+					$.observable( developer ).setProperty( $( this ).serializeArray() );
+					editForm.hide();
+				});
 
-		var developer, view;
-		var editForm = $( "#editForm" ).hide().submit( function( event ) {
-			event.preventDefault();
-			$.observable( developer ).setProperty( $( this ).serializeArray() );
-			editForm.hide();
-		});
-		grid.element.delegate( "button.edit", "click", function() {
-			view = $( this ).view();
-			developer = view.data;
-			editForm.find("fieldset").html( $.render( grid.options.editTemplate, developer));
-			editForm.show();
-		});
-		grid.element.delegate( "button.remove", "click", function() {
-			var developerToRemove = $( this ).view().data;
-			var index = localDevelopers.indexOf( developerToRemove );
-			$.observable( localDevelopers ).remove( index );
-			if ( developerToRemove === developer ) {
-				editForm.hide();
-			}
-		});
+			grid = $.ui.grid( {}, "#developers-local" )
+				.render( developers.output );
+
+			grid.element
+				.delegate( "button.edit", "click", function() {
+					view = $( this ).view();
+					developer = view.data;
+					editForm.find("fieldset").html( $.render( grid.options.editTemplate, developer));
+					editForm.show();
+				})
+				.delegate( "button.remove", "click", function() {
+					var developerToRemove = $( this ).view().data;
+					var index = localDevelopers.indexOf( developerToRemove );
+					$.observable( localDevelopers ).remove( index );
+					if ( developerToRemove === developer ) {
+						editForm.hide();
+					}
+				})
+				.gridEditor({
+					items: "td:not(:has(button))",
+					type: function(cell) {
+						// TODO should be possible to retrieve this from grid.options.columns
+						return grid.element.find( "th" ).eq( cell[ 0 ].cellIndex ).data( "type" );
+					},
+					submit: function( event, ui) {
+						var object = ui.item.view().data,
+							field = grid.element.find( "th" ).eq( ui.item[ 0 ].cellIndex ).data( "field" );
+
+						$.observable( object ).setProperty( field, ui.value );
+
+						// for the navigator
+						grid.element.focus();
+					}
+				})
+				.navigator(),
 
 		$( "#pageDevelopers" ).pager({
 			source: developers
@@ -118,8 +115,6 @@
 		});
 
 		$("form").tooltip();
-
-		grid.render();
 	});
 	</script>
 	<style>
@@ -145,7 +140,6 @@
 	<button data-page="last">Last</button>
 </p>
 
-<div style="float: left; clear:both;">
 <table id="developers-local">
 	<thead>
 		<tr>
@@ -169,7 +163,6 @@
 	</fieldset>
 	<p><input type="submit" value="Save changes" /></p>
 </form>
-</div>
 
 <script id="cell-edit-tmpl" type="text/x-jquery-tmpl">
 	<td><button class='edit'>Edit</button></td>

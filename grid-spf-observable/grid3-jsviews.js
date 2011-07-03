@@ -28,9 +28,9 @@ $.widget( "ui.grid", {
 			that = this,
 			template = this.options.rowTemplate,
 			source = this.options.source;
-		
+
 		tbody.html( $.render( template, source ))
-			.link( source, { 
+			.link( source, {
 				afterChange: function( ev, eventData ) {
 					switch ( ev.type ) {
 						case "arrayChange" :
@@ -39,7 +39,7 @@ $.widget( "ui.grid", {
 					}
 				}
 			});
-			
+
 		this._trigger("render");
 	},
 	_columns: function() {

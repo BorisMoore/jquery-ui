@@ -6,8 +6,9 @@ $.widget( "ui.localDataview", $.ui.dataview, {
 	widgetEventPrefix: "dataview",
 	_create: function() {
 		var that = this;
-		$([ this.options.input ]).bind( "arrayChange", function() {
+		$([ this.options.input ]).bind( "arrayChange", function( ev, eventData ) {
 			that.refresh();
+			$( that ).triggerHandler( "afterChange", eventData );
 		});
 		this.refresh();
 	},

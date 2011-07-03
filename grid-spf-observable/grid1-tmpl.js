@@ -34,7 +34,7 @@ $.widget( "ui.grid", {
 		// TODO this code assumes a single tbody which is not a safe assumption
 		var tbody = this.element.find( "tbody" ).empty();
 
-		// TODO To refresh a single row, call tmplItem.update() in tmpl, or view.render() in JsViews. 
+		// TODO To refresh a single row, call tmplItem.update() in tmpl, or view.render() in JsViews.
 		//(But JsViews does it for you when adding items are added  to data array).
 		$.tmpl( this.options.rowTemplate, this.options.source.toArray() ).appendTo( tbody );
 

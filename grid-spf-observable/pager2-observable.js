@@ -9,7 +9,7 @@ $.widget( "spf.pager", {
 		$([ this.options.source.output ]).bind( "arrayChange", function() {
 			that.refresh();
 		});
-		
+
 		this.buttons = this.element.delegate("button", "click", function() {
 			var method = $(this).data("page");
 			that[method]();
@@ -22,9 +22,9 @@ $.widget( "spf.pager", {
 		});
 		this.refresh();
 	},
-	refresh: function() {	
+	refresh: function() {
 		this.buttons.button("enable");
-		
+
 		var source = this.options.source;
 		if (!source.options.paging.offset) {
 			this.buttons.slice(0, 3).button("disable")
@@ -36,35 +36,35 @@ $.widget( "spf.pager", {
 		this.element.find(".total").text(this.totalPages());
 		this.element.find(".totalRecords").text(source.totalCount);
 	},
-	
+
 	totalPages: function() {
 		return this.options.source.totalPages();
 	},
-	
+
 	page: function(pageIndex) {
 		return this.options.source.page(pageIndex);
 	},
-	
+
 	first: function() {
 		this.page(1);
 	},
-	
+
 	prevStep: function() {
 		this.options.source.options.paging.offset -= 1;
 	},
-	
+
 	prev: function() {
 		this.page( this.page() - 1 )
 	},
-	
+
 	next: function() {
 		this.page( this.page() + 1 )
 	},
-	
+
 	nextStep: function() {
 		this.options.source.options.paging.offset += 1;
 	},
-	
+
 	last: function() {
 		this.page( this.totalPages() );
 	}

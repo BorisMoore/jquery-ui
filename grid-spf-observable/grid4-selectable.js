@@ -54,7 +54,7 @@ $.widget( "ui.grid", {
 			source = this.options.source;
 
 		tbody.html( $.render( template, source ))
-			.link( source, { 
+			.link( source, {
 				afterChange: function( ev, eventData ) {
 					switch ( ev.type ) {
 						case "arrayChange" :
@@ -64,7 +64,7 @@ $.widget( "ui.grid", {
 					}
 				}
 			});
-			
+
 		this._trigger("render");
 	},
 	selected: function( items ) {
@@ -113,7 +113,7 @@ $.widget( "ui.grid", {
 		}
 		this.options.rowTemplate = $.template( this.options.rowTemplate ); // Compile the template, for better perf
 	},
-	_refreshSelection: function() { 
+	_refreshSelection: function() {
 		this.element.find( "tbody tr" ).addClass( function( index, currentClass ) {
 			if ( $.inArray( $.view( this ).data, selected ) >= 0) {
 				return "ui-selected";

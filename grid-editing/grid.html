@@ -27,7 +27,7 @@
 	if ( !window.console ) {
 		window.console = {
 			log: function() {
-				var message = Array.prototype.slice.call( arguments, 1 ).join( ", " );
+				var message = Array.prototype.slice.call( arguments, 0 ).join( ", " );
 				$("<div>").text( message ).appendTo("body");
 			}
 		}

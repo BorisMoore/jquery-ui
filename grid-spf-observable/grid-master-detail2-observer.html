@@ -50,7 +50,7 @@
 				});
 			}
 		}, "#developers-grid" );
-		
+
 		$( "#developers-pager" ).pager({
 			source: developers
 		});
@@ -84,13 +84,13 @@
 				updateDetailView();
 			}
 		});
-		
+
 		$( ".clearSelection" ).click( function() {
 			$.observable( selectedData ).remove( 0, selectedData.length );
-			developersGrid.element.find( "tbody tr" ).removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state. 
+			developersGrid.element.find( "tbody tr" ).removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state.
 			updateDetailView();
 		});
-		
+
 		$( ".invertSelection" ).click( function() {
 			// Clone localDevelopers, and remove items in current selectedData.
 			var inverted = localDevelopers.slice( 0 ),
@@ -103,7 +103,7 @@
 			developersGrid.element.find("tbody tr").toggleClass( "ui-selected" );
 			updateDetailView();
 		});
-		
+
 
 //////////////////// Editing actions using observable ////////////////////////////
 
@@ -118,7 +118,7 @@
 		$( ".addDeveloper" ).click( function () {
 			adding = true;
 			var l = selectedData.length,
-				insertAt = l 
+				insertAt = l
 					? $.inArray( selectedData[ l - 1 ], localDevelopers )
 					: -1,
 				addedData = {
@@ -149,7 +149,7 @@
 				var tmplItem = $.tmplItem( this );
 				$.observable( tmplItem.data ).setProperty( $( "input", tmplItem.nodes ).serializeArray() );
 				deleteItem( tmplItem.data, selectedData );
-				developersGrid.refresh(); // Only needed if data does not change - in order to reset selected item class on tr. 
+				developersGrid.refresh(); // Only needed if data does not change - in order to reset selected item class on tr.
 				$( tmplItem.nodes ).remove();
 			})
 

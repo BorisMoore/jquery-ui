@@ -7,7 +7,7 @@
  */
 /// <reference path="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.5-vsdoc.js" />
 /// <reference path="../jquery-1.5.2.js" />
-(function($, undefined) {
+(function( $, undefined ) {
 // var TEST_EVENTS = { total:0, change:0, arrayChange:0, objectChange:0 };
 var topView, settings, decl,
 	fnSetters = {
@@ -60,7 +60,7 @@ var topView, settings, decl,
 									}
 									toPath = path;
 									cnvt =  convert || link.convert;
-									cnvtParams = convertParams; 
+									cnvtParams = convertParams;
 								});
 							}
 						}
@@ -134,7 +134,7 @@ var topView, settings, decl,
 						$target.attr( attr, sourceValue );
 					}
 				}
-				if ( options.afterChange ) {
+				if ( options.afterChange && eventArgs ) {
 					options.afterChange.call( this, ev, eventArgs );
 				}
 			}
@@ -415,7 +415,6 @@ function addLinkToNode( source, context, get ) { // TODO reduce code size by sha
 	if ( get ) {
 		handler({ target: source });
 	}
-	return handler;
 }
 
 function addLinkFromNode( source, context ) {
@@ -428,7 +427,6 @@ function addLinkFromNode( source, context ) {
 	jsViewsData( source, "to", true ).push( target ); // Store for unlinking
 	$( source ).bind( "change", handler );
 //	$( "#console" ).append( ++TEST_EVENTS.total + " + change " + ++(TEST_EVENTS.change) + "<br/>");
-	return handler;
 }
 
 function removeLinkFromNode( source, context ) {
@@ -551,7 +549,7 @@ function getLeafObject( object, path ) {
 	return object && object[ path ] && [ object, path ];
 }
 
-function inputAttrib( elem ) { 
+function inputAttrib( elem ) {
 	return elem.type === "checkbox" ? elem.checked : $( elem ).val();
 }
 
@@ -786,7 +784,7 @@ $.fn.extend({
 		// Declarative Linking
 		// Supported signatures:
 		//    link( data );
-		//    link( data, options ); 
+		//    link( data, options );
 		// If options is a function, cb - shorthand for { beforeChange: cb }
 		if ( data ) {
 			link( data, this, undefined, true, options );

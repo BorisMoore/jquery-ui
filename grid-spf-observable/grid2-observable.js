@@ -1,10 +1,10 @@
 /*
  * Grid
- * 
+ *
  * Depends on:
  * tmpl
  * datastore
- * 
+ *
  * Optional:
  * extractingDatasource
  */

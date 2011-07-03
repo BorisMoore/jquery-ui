@@ -55,7 +55,7 @@
 		});
 
 //////////////////// Selection support - to be integrated into grid ////////////////////
-		
+
 		var selectedData = developersGrid.options.selectedData;
 
 		$( "#developers-grid" ).selectable({
@@ -86,10 +86,10 @@
 
 		$( ".clearSelection" ).click(function() {
 			selectedData.splice( 0, selectedData.length );
-			developersGrid.element.find("tbody tr").removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state. 
+			developersGrid.element.find("tbody tr").removeClass( "ui-selected" ); // Avoid re-rendering the grid, for better perf, and to maintain state.
 			updateDetailView();
 		});
-		
+
 		$( ".invertSelection" ).click(function() {
 			// Clone localDevelopers, and remove items in current selectedData.
 			var inverted = localDevelopers.slice( 0 ),
@@ -104,7 +104,7 @@
 			developersGrid.element.find("tbody tr").toggleClass( "ui-selected" );
 			updateDetailView();
 		});
-		
+
 //////////////////// Editing actions ////////////////////
 
 		function updateDetailView() {
@@ -118,7 +118,7 @@
 		$( ".addDeveloper" ).click( function () {
 			adding = true;
 			var l = selectedData.length,
-				insertAt = l 
+				insertAt = l
 					? $.inArray( selectedData[ l - 1 ], localDevelopers )
 					: -1,
 				addedData = {
@@ -128,9 +128,9 @@
 				};
 			[].splice.apply( localDevelopers, [ insertAt+1, 0 ].concat( addedData ));
 			[].splice.apply( selectedData, [ 0, selectedData.length ].concat( addedData ));
-			
+
 			developers.refresh();
-			developersGrid.refresh();  
+			developersGrid.refresh();
 			updateDetailView();
 			adding = false;
 		});
@@ -155,10 +155,10 @@
 					tmplItem.data[ dataItems[l].name ] = dataItems[l].value;
 				}
 				deleteItem( tmplItem.data, selectedData );
-				developersGrid.refresh();  
+				developersGrid.refresh();
 				$( tmplItem.nodes ).remove();
 			})
-		
+
 			.delegate( "#deleteBtn", "click", function () {
 				var item = $.tmplItem( this ).data;
 				deleteItem( item, localDevelopers );

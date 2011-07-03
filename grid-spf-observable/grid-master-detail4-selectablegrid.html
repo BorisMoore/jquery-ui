@@ -43,9 +43,9 @@
 		var developersGrid = $.ui.grid({
 			source: developers.toArray()
 		}, "#developers-grid" );
-		
+
 		var selectedData = developersGrid.selected();
-		
+
 		$( "#developers-pager" ).pager({
 			source: developers
 		});
@@ -55,7 +55,7 @@
 		$( ".clearSelection" ).click( function() {
 			developersGrid.selected([]);
 		});
-		
+
 		$( ".invertSelection" ).click( function() {
 			// Clone localDevelopers, and remove items in current selectedData.
 			inverted = localDevelopers.slice( 0 ),
@@ -71,11 +71,11 @@
 
 		developers.refresh();
 		developersGrid.render();
-				
+
 		$( ".addDeveloper" ).click( function () {
 			adding = true;
 			var l = selectedData.length,
-				insertAt = l 
+				insertAt = l
 					? $.inArray( selectedData[ l - 1 ], localDevelopers )
 					: -1,
 				addedData = {
@@ -101,15 +101,15 @@
 		$( "#developers-detail" )
 			.html( $( "#detail-template" ).render( selectedData ))
 
-			.link( selectedData ) 
+			.link( selectedData )
 
 			.delegate( "#okBtn", "click", function () {
 				// Commit entire form content to data model with one API call.
 				var view = $.view( this ),
 					newData = $( "input", view.nodes ).serializeArray();
-				
+
 				$.observable( view.data ).setProperty( newData );
-				
+
 				deleteItem( view.data, selectedData );
 			})
 

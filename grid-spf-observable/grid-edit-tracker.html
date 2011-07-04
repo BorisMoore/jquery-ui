@@ -26,7 +26,6 @@
 	<script src="grid-editing/grid-editor.js"></script>
 	<script src="grid-editing/navigator.js"></script>
 	<script src="grid-editing/localstore.js"></script>
-	<script src="jquery.datatracker.js" type="text/javascript"></script>
 	<script>
 
 //	TODO add selection support. Currently conflicts with inplace editing
@@ -119,25 +118,25 @@
 
 		/////////////// Tracker code ///////////////
 
-		var tracker = $.dataTracker( localDevelopers ), // can pass filter path for which objects/events are to be hooked up
-			updatedItems = [],
+		var updatedItems = [],
 			insertedItems = [],
 			removedItems = [];
 
-		$([ tracker, grid, developers ]).bindAll( "afterChange",  function( trackerEventData, gridEventData , devsEventData, complete ) {
-			if ( trackerEventData ) {
-				var eventData = trackerEventData[1];
+		$([ grid, developers ]).bindAll( "afterChange",  function( gridEventData , devsEventData, complete ) {
+			var eventData = devsEventData || gridEventData;
+			if ( eventData ) {
+				eventData = eventData[1];
 				switch ( eventData.change ) {
-					case "change":
-					$.observable( updatedItems ).insert( updatedItems.length, eventData.item );
-					break;
-
 					case "insert":
 					$.observable( insertedItems ).insert( insertedItems.length, eventData.items );
 					break;
 
 					case "remove":
 					$.observable( removedItems ).insert( removedItems.length, eventData.items );
+					break;
+
+					case "change":
+					$.observable( updatedItems ).insert( updatedItems.length, eventData.item );
 					break;
 				}
 			}

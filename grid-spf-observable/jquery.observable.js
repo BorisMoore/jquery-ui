@@ -174,6 +174,7 @@
 			argArray = [];
 		}
 		this.each( function( index ) {
+			var timeout;
 			$( this ).bind( type, function(){
 				if ( !argArray[index ]) {
 					count++;
@@ -182,9 +183,10 @@
 				if ( count > 1 ) {
 					if ( count === that.length ) {
 						callHandler( true );
+						clearTimeout( timeout );
 					}
 				} else {
-					setTimeout( callHandler, 0 );
+					timeout = setTimeout( callHandler, 0 );
 				}
 			});
 		});

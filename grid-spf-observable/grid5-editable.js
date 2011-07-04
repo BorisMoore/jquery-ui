@@ -29,6 +29,10 @@ $.widget( "ui.grid", {
 							tbody.find( "td" ).addClass( "ui-widget-content" );
 							that._trigger("render");
 							break;
+						case "propertyChange" :
+							eventData.item = this.source;							
+							eventData.change = "change";							
+							break;
 					}
 					$( that ).triggerHandler( "afterChange", eventData );
 				}

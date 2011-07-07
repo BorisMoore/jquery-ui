@@ -58,7 +58,7 @@
 
 			editForm = $( "#editForm" ).hide().submit( function( event ) {
 					event.preventDefault();
-					$.observable( developer ).setProperty( $( this ).serializeArray() );
+					$.observable( developer ).setProperty( $( "input", this ).serializeArray() );
 					editForm.hide();
 				});
 
@@ -124,9 +124,15 @@
 			insertedItems = [],
 			removedItems = [];
 
-		$([ tracker, grid, developers ]).bindAll( "afterChange",  function( trackerEventData, gridEventData , devsEventData, complete ) {
+		$([ tracker, grid ]).bindAll( "afterChange",  function( trackerEventData, gridEventData ) {
+			// This gets called once when the change has been processed by both the grid and the tracker, 
+			// if developers array is changed. 
+			// For paging, however, developers array does not change, and this is called after the grid has 
+			// refreshed from paging. In this case trackerEventData is not defined.
+			
+			// Change tracking:
 			if ( trackerEventData ) {
-				var eventData = trackerEventData[1];
+				var eventData = trackerEventData[0][1];
 				switch ( eventData.change ) {
 					case "change":
 					$.observable( updatedItems ).insert( updatedItems.length, eventData.item );
@@ -141,6 +147,8 @@
 					break;
 				}
 			}
+
+			// Highlight modified rows. Needs the be after both grid and tracker have processed the change event
 			var changedClass = "grid-selected-row";
 			grid.itemContainer
 				.find( "tr" )

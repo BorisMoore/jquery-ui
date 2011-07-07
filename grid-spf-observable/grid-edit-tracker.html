@@ -57,7 +57,7 @@
 
 			editForm = $( "#editForm" ).hide().submit( function( event ) {
 					event.preventDefault();
-					$.observable( developer ).setProperty( $( this ).serializeArray() );
+					$.observable( developer ).setProperty( $( "input", this ).serializeArray() );
 					editForm.hide();
 				});
 
@@ -122,10 +122,16 @@
 			insertedItems = [],
 			removedItems = [];
 
-		$([ grid, developers ]).bindAll( "afterChange",  function( gridEventData , devsEventData, complete ) {
+		$([ grid, developers ]).bindAll( "afterChange", function( gridEventData , devsEventData ) {
+			// This gets called once when the change has been processed by both the grid and the developers array, 
+			// if developers array is changed. 
+			// For paging, however, developers array does not change, and this is called after the grid has 
+			// refreshed from paging. In this case devsEventData is not defined.
+			
+			// Change tracking:
 			var eventData = devsEventData || gridEventData;
 			if ( eventData ) {
-				eventData = eventData[1];
+				eventData = eventData[0][1];
 				switch ( eventData.change ) {
 					case "insert":
 					$.observable( insertedItems ).insert( insertedItems.length, eventData.items );
@@ -140,6 +146,17 @@
 					break;
 				}
 			}
+			//	Note: Could be smart about placing tracked items in a single change category, using the following approach:
+			//	function updateTracker( item, category ) {
+			//		var currentCategory = category( item ); 
+			//		if ( !currentCategory ) {
+			//			addToCategory( item, category );
+			//		} else if ( (category === "insert " && currentCategory === "remove") || ( category === "remove" && currentCategory === "insert" )) {
+			//			removeFromCategory( item, currentCategory );
+			//		}
+			//	}
+
+			// Highlight modified rows. Needs the be after both grid and developers array have processed the change event
 			var changedClass = "grid-selected-row";
 			grid.itemContainer
 				.find( "tr" )
@@ -152,6 +169,10 @@
 				})
 				.addClass( changedClass );
 		});
+
+//		$([ grid ]).bindAll( "afterChange", function( gridEventData, complete ) {
+//			// Could attach this handler which would get called once for edit operations on a row which may include multiple updates on different properties				
+//		});
 
 		$.ui.grid({ columns: [ "firstName", "lastName", "country" ]}, "#developers-inserted" )
 			.render( insertedItems );

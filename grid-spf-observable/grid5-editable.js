@@ -33,6 +33,8 @@ $.widget( "ui.grid", {
 							eventData.item = this.source;							
 							eventData.change = "change";							
 							break;
+						default:
+							debugger;
 					}
 					$( that ).triggerHandler( "afterChange", eventData );
 				}
@@ -106,8 +108,10 @@ $.widget( "ui.grid", {
 				var label = field.replace(/^(.)(.*)$/, function(match, first, rest) {
 					return first.toUpperCase() + rest.toLowerCase();
 				});
-				// TODO only include columns that have data-field attributes
-				return "<input type='text' name='" + field + "' placeholder='" + label + "' value='${" + field + "}' title='" + label + "' />";
+				// only include columns that have data-field attributes
+				return headers.eq(index).data( "field") 
+					? "<input type='text' name='" + field + "' placeholder='" + label + "' value='${" + field + "}' title='" + label + "' />"
+					: "";
 			}).join( "" );
 			this.options.editTemplate = template;
 		}

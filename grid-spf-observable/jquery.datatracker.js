@@ -22,7 +22,18 @@
 					break;
 
 				case "refresh":
-					//TODO - need old objects and new objects!!!
+					var i = array.length, oldItems = eventData.oldItems;
+					while ( i-- ) {
+						if ( !$.inArray( array[i], oldItems )) {
+							that.bindObjects( array[i] );
+						}
+					}
+					i = oldItems.length;
+					while ( i-- ) {
+						if ( !$.inArray( oldItems[i], array )) {
+							that.unbindObjects( oldItems[i] );
+						}
+					}
 					break;
 			}
 			$( that ).triggerHandler( "afterChange", eventData );

@@ -97,9 +97,7 @@
 		});
 
 		$( "#developers-detail" )
-			.html( $( "#detail-template" ).render( selectedData ))
-
-			.link( selectedData )
+			.link( selectedData, "#detail-template" )
 
 			.delegate( "#okBtn", "click", function () {
 				// Commit entire form content to data model with one API call.

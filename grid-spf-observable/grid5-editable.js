@@ -20,8 +20,7 @@ $.widget( "ui.grid", {
 			that = this,
 			template = this.options.rowTemplate;
 
-		tbody.html( $.render( template, data  ))
-			.link( data, {
+		tbody.link( data, template, {
 				afterChange: function( ev, eventData ) {
 					//that._trigger( "dataChange", eventData );
 					switch ( ev.type ) {

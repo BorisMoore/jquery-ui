@@ -53,8 +53,7 @@ $.widget( "ui.grid", {
 			template = this.options.rowTemplate,
 			source = this.options.source;
 
-		tbody.html( $.render( template, source ))
-			.link( source, {
+		tbody.link( source, template, {
 				afterChange: function( ev, eventData ) {
 					switch ( ev.type ) {
 						case "arrayChange" :
